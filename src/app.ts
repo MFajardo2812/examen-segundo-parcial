@@ -1,42 +1,23 @@
-import "reflect-metadata";
 import express from "express";
-import { config } from "dotenv";
-import { AppDataSource } from "./config/database";
-import patientRoutes from "./routes/patientRoutes";
-import doctorRoutes from "./routes/doctorRoutes";
-import { specs, swaggerUi } from "./config/swagger";
+import swaggerUi from "swagger-ui-express";
+import userRoutes from "./routes/userRoutes";
+import productRoutes from "./routes/productRoutes";
+import simulationRoutes from "./routes/simulationRoutes";
+import { openApiSpec } from "./config/swagger";
+import { errorHandler } from "./middlewares/errorHandler";
 
-config();
+export function createApp() {
+  const app = express();
+  app.use(express.json());
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+  app.get("/health", (_req, res) => res.json({ ok: true }));
 
-app.use(express.json());
+  app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
-// Conectar a base de datos
-AppDataSource.initialize()
-  .then(() => {
-    console.log("✅ Database connected successfully");
-  })
-  .catch((error) => {
-    console.error("❌ Error connecting to database:", error);
-    process.exit(1);
-  });
+  app.use("/usuarios", userRoutes);
+  app.use("/productos", productRoutes);
+  app.use("/simulaciones", simulationRoutes);
 
-// Rutas
-app.use("/patients", patientRoutes);
-app.use("/doctors", doctorRoutes);
-
-// Swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
-
-// Health check
-app.get("/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString() });
-});
-
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(` Server running on http://localhost:${PORT}`);
-  console.log(` Swagger docs: http://localhost:${PORT}/api-docs`);
-});
+  app.use(errorHandler);
+  return app;
+}

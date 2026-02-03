@@ -1,18 +1,22 @@
+import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { config } from "dotenv";
-import { Patient } from "../entities/Patient.entity";
-import { Doctor } from "../entities/Doctor.entity";
+import { User } from "../entities/User.entity";
+import { FinancialProduct } from "../entities/FinancialProduct.entity";
+import { Simulation } from "../entities/Simulation.entity";
+import { SimulationProduct } from "../entities/SimulationProduct.entity";
+import dotenv from "dotenv";
 
-config();
+dotenv.config();
 
 export const AppDataSource = new DataSource({
-  type: process.env.DB_TYPE as any,
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || "3306"),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  synchronize: process.env.DB_SYNC === "true",
-  logging: true,
-  entities: [Patient, Doctor],
+  type: "postgres",
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT || 5432),
+  username: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASS || "admin123",
+  database: process.env.DB_NAME || "andesfin_db",
+  synchronize: false, 
+  logging: false,
+  entities: [User, FinancialProduct, Simulation, SimulationProduct]
 });
+
